@@ -1,0 +1,21 @@
+
+The script in this repository can be used to create a RHEL5 chroot.
+
+We plan on using this to provide a RHEL5-compatibility environment for
+batch system jobs which require RHEL5, but the local site provides a RHEL6
+host environment
+
+To create the chroot, simply run:
+
+./rhel5-in-rhel6-chroot.sh
+
+You must customize the script for your site before using; at the least, you'll
+want to customize where the chroot is written.
+
+You may also want to play around with different yum repos, mount different NFS
+servers, and play with the base install.
+
+To test this out in a shell, you can run:
+
+chroot /chroot/sl5 bash
+
