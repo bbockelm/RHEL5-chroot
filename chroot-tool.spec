@@ -1,7 +1,7 @@
 
 Name: chroot-tool
 Group: Applications/System
-Version: 0.1
+Version: 0.2
 Release: 1%{?dist}
 Summary: A tool for creating and manipulating chroots
 
@@ -47,6 +47,9 @@ rm -rf $RPM_BUILD_ROOT
 %config(noreplace) %{_sysconfdir}/%{name}/yum.conf
 
 %changelog
+* Thu Feb 09 2012 Brian Bockelman <bbockelm@cse.unl.edu> - 0.2-1
+- Added line to secure chroot.
+
 * Thu Feb 09 2012 Brian Bockelman <bbockelm@cse.unl.edu> - 0.1-1
 - Initial release of chroot-tool.
 

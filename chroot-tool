@@ -12,6 +12,7 @@ def usage():
     print "    install rpm1 [rpm2 rpm3 ...] Install a list of RPMs into chroot"
     print "    clear                        Clear a chroot of all mountpoints"
     print "    query rpm                    Query chroot's RPM database"
+    print "    secure                       Chmod insecure dirs and binaries"
 
 def create(args, cfg, opts):
 
@@ -96,6 +97,41 @@ def query(args, cfg, opts):
 
     return os.WEXITSTATUS(os.system("rpm --root %s -q %s" % (root_dir, args[0])))
 
+def secure(args, cfg, opts):
+
+    root_dir = cfg.get("chroot", "root_dir")
+
+    # Check for world-writable dirs
+    fd = os.popen("find %s -mount -type d -perm -1777" % root_dir)
+    bad_dirs = []
+    for line in fd.readlines():
+        bad_dirs.append(line.strip())
+
+    if fd.close():
+        print "Unable to find world-writable dirs"
+        return 12
+
+    for dir in bad_dirs:
+        st = os.stat(dir)
+        os.chmod(dir, st.st_mode & 00755)
+
+    # Check for setuid junk
+    fd = os.popen("find %s -mount -type f \( -perm -4000 -o -perm -2000 \)" % root_dir)
+    bad_files = []
+    for line in fd.readlines():
+        st
+        bad_files.append(line.strip())
+
+    if fd.close():
+        print "Unable to find setuid binaries"
+        return 13
+
+    for file in bad_files:
+        st = os.stat(file)
+        os.chmod(file, st.st_mode & 00777)
+
+    return 0
+
 def main():
 
     parser = optparse.OptionParser()
@@ -125,6 +161,9 @@ def main():
 
     elif args[0] == "query":
         return query(args[1:], cfg, opts)
+
+    elif args[0] == "secure":
+        return secure(args[1:], cfg, opts)
 
 if __name__ == '__main__':
     retval = main()
