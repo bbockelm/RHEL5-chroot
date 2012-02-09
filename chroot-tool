@@ -6,7 +6,7 @@ import optparse
 import ConfigParser
 
 def usage():
-    print "Usage: chroot_tool [-c config_file] cmd"
+    print "Usage: chroot-tool [-c config_file] cmd"
     print "Available commands:"
     print "    create                       Create the empty chroot"
     print "    install rpm1 [rpm2 rpm3 ...] Install a list of RPMs into chroot"
@@ -101,7 +101,7 @@ def main():
     parser = optparse.OptionParser()
 
     parser.add_option("-c", "--config", dest="config_file",
-        default="/etc/chroot_tool/tool.cfg", help="Configuration file for chroot_tool")
+        default="/etc/chroot-tool/tool.cfg", help="Configuration file for chroot-tool")
 
     opts, args = parser.parse_args()
 

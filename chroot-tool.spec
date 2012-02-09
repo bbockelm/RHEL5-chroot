@@ -2,7 +2,7 @@
 Name: chroot-tool
 Group: Applications/System
 Version: 0.1
-Release: 0%{?dist}
+Release: 1%{?dist}
 Summary: A tool for creating and manipulating chroots
 
 License: Apache 2.0
@@ -14,6 +14,7 @@ Source2: tool.cfg
 Requires: yum
 Requires: rpm
 
+BuildArch: noarch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 
 %description
@@ -46,4 +47,7 @@ rm -rf $RPM_BUILD_ROOT
 %config(noreplace) %{_sysconfdir}/%{name}/yum.conf
 
 %changelog
+* Thu Feb 09 2012 Brian Bockelman <bbockelm@cse.unl.edu> - 0.1-1
+- Initial release of chroot-tool.
+
 
