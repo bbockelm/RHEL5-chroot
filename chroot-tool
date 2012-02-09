@@ -1,0 +1,113 @@
+#!/usr/bin/python
+
+import os
+import sys
+import optparse
+import ConfigParser
+
+def usage():
+    print "Usage: chroot_tool [-c config_file] cmd"
+    print "Available commands:"
+    print "    create                       Create the empty chroot"
+    print "    install rpm1 [rpm2 rpm3 ...] Install a list of RPMs into chroot"
+    print "    clear                        Clear a chroot of all mountpoints"
+    print "    query rpm                    Query chroot's RPM database"
+
+def create(args, cfg, opts):
+
+    root_dir = cfg.get("chroot", "root_dir")
+    yum_conf = cfg.get("chroot", "yum_conf")
+
+    if not os.path.exists(yum_conf):
+        print "Yum config does not exist: %s." % yum_conf
+        return 5
+
+    if not os.path.exists(root_dir):
+        os.makedirs(root_dir)
+
+    rpm_path = os.path.join(root_dir, "var", "lib", "rpm")
+    if os.path.exists(rpm_path):
+        print "Cowardly refusing to re-create an existing chroot %s" % root_dir
+        return 3
+    os.makedirs(rpm_path)
+
+    if os.system("rpm --root %s --initdb" % root_dir):
+        print "RPM database failed to initialize in chroot"
+        return 4
+
+def install(args, cfg, opts):
+
+    if not args:
+        print "No RPMs specified to install!"
+        return 6
+
+    root_dir = cfg.get("chroot", "root_dir")
+    yum_conf = cfg.get("chroot", "yum_conf")
+
+    rpms = " ".join(args)
+
+    if os.system("yum -c %s --installroot %s -y install %s" % (yum_conf, root_dir, rpms)):
+        print "yum install failed"
+        return 7
+
+def clear(args, cfg, opts):
+
+    root_dir = cfg.get("chroot", "root_dir")
+
+    failed_dismounts = []
+
+    for line in open("/proc/self/mounts", "r"):
+        line = line.strip()
+        info = line.split()
+        if len(info) < 2:
+            print "Bad /proc/self/mounts line: %s" % line
+        mount_point = info[1]
+        if mount_point.startswith(root_dir):
+            if os.system("umount -l %s" % mount_point):
+                failed_dismounts.append(mount_point)
+
+    for line in open("/proc/self/mounts", "r"):
+        line = line.strip()
+        info = line.split()
+        if len(info) < 2:
+            print "Bad /proc/self/mounts line: %s" % line
+        mount_point = info[1]
+        if mount_point.startswith(root_dir):
+            if mount_point in failed_dismounts:
+                print "Failed to unmount %s" % mount_point
+                return 8
+            else:
+                print "Mysterious new mount %s" % mount_point
+                return 9
+
+def main():
+
+    parser = optparse.OptionParser()
+
+    parser.add_option("-c", "--config", dest="config_file",
+        default="/etc/chroot_tool/tool.cfg", help="Configuration file for chroot_tool")
+
+    opts, args = parser.parse_args()
+
+    if len(args) == 0:
+        usage()
+        return 1
+
+    cfg = ConfigParser.ConfigParser()
+    if opts.config_file not in cfg.read(opts.config_file):
+        print "Unable to parse config file: %s" % config_file
+        return 2
+
+    if args[0] == "create":
+        return create(args[1:], cfg, opts)
+
+    elif args[0] == "install":
+        return install(args[1:], cfg, opts)
+
+    elif args[0] == "clear":
+        return clear(args[1:], cfg, opts)
+
+if __name__ == '__main__':
+    retval = main()
+    sys.exit(retval)
+
