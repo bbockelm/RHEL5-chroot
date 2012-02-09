@@ -63,6 +63,7 @@ def clear(args, cfg, opts):
             print "Bad /proc/self/mounts line: %s" % line
         mount_point = info[1]
         if mount_point.startswith(root_dir):
+            print "Unmounting %s" % mount_point
             if os.system("umount -l %s" % mount_point):
                 failed_dismounts.append(mount_point)
 
@@ -79,6 +80,21 @@ def clear(args, cfg, opts):
             else:
                 print "Mysterious new mount %s" % mount_point
                 return 9
+    return 0
+
+def query(args, cfg, opts):
+
+    root_dir = cfg.get("chroot", "root_dir")
+
+    if not os.path.exists(root_dir):
+        print "No chroot to query: %s" % root_dir
+        return 10
+
+    if len(args) != 1:
+        print "Invalid usage: must specify an RPM to query"
+        return 11
+
+    return os.WEXITSTATUS(os.system("rpm --root %s -q %s" % (root_dir, args[0])))
 
 def main():
 
@@ -95,7 +111,7 @@ def main():
 
     cfg = ConfigParser.ConfigParser()
     if opts.config_file not in cfg.read(opts.config_file):
-        print "Unable to parse config file: %s" % config_file
+        print "Unable to parse config file: %s" % opts.config_file
         return 2
 
     if args[0] == "create":
@@ -106,6 +122,9 @@ def main():
 
     elif args[0] == "clear":
         return clear(args[1:], cfg, opts)
+
+    elif args[0] == "query":
+        return query(args[1:], cfg, opts)
 
 if __name__ == '__main__':
     retval = main()

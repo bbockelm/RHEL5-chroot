@@ -9,7 +9,7 @@ License: Apache 2.0
 
 Source0: chroot-tool
 Source1: yum.conf
-Source2: chroot-tool.cfg
+Source2: tool.cfg
 
 Requires: yum
 Requires: rpm

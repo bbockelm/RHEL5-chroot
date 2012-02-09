@@ -1,0 +1,10 @@
+#!/bin/sh
+
+SOURCE_DIR=`rpm --eval '%{_sourcedir}'`
+
+cp chroot-tool $SOURCE_DIR/
+cp tool.cfg $SOURCE_DIR/
+cp yum.conf $SOURCE_DIR/
+
+rpmbuild -ba chroot-tool.spec
+
