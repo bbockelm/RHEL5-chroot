@@ -1,21 +1,56 @@
 
-The script in this repository can be used to create a RHEL5 chroot.
+This repository provides "chroot-tool", a simple tool designed for quick
+and easy chroots.
 
 We plan on using this to provide a RHEL5-compatibility environment for
 batch system jobs which require RHEL5, but the local site provides a RHEL6
-host environment
+host environment.
 
-To create the chroot, simply run:
+The tool provides basic functionality using "yum", but a complete chroot will
+need additional supplements (such as bind mounts).  We include example puppet
+manifests for both Condor and PBS sites.
 
-./rhel5-in-rhel6-chroot.sh
+USE:
 
-You must customize the script for your site before using; at the least, you'll
-want to customize where the chroot is written.
+To create an empty chroot with no installed files:
 
-You may also want to play around with different yum repos, mount different NFS
-servers, and play with the base install.
+     chroot-tool create 
 
-To test this out in a shell, you can run:
+To install the base RPMs for RHEL5:
+
+     chroot-tool install acl attr authconfig bc bind-utils bzip2 \
+                         cyrus-sasl-plain lsof libcgroup quota rhel-instnum \
+                         cpuspeed dos2unix m2crypto sssd nc prctl redhat-lsb \
+                         setarch time tree unix2dos unzip wget which zip zlib
+
+That list is customized for our site; adjust for yours.
+
+To remove all world-writable directories and setuid binaries from the chroot,
+use the "secure" subcommand:
+
+     chroot-tool secure
+
+To test out the resulting chroot, do the following:
 
 chroot /chroot/sl5 bash
+
+BUILDING:
+
+chroot-tool is a self-contained python script.  However, to build it into an
+RPM, do the following:
+
+     ./build_rpm
+
+CONFIGURAITON:
+
+There are basically two configuration decisions you must make.
+
+First, decide where to build the chroot in the filesystem; this is kept in
+/etc/chroot-tool/tool.cfg; the default is:
+
+root_dir = /chroot/sl5-v1
+
+Second, you will need to decide what yum repositories to enable for the chroot
+(these are necessarily different from the system ones!).  You can configure
+yum by editing the file /etc/chroot-tool/yum.conf
 

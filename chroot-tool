@@ -53,7 +53,14 @@ def install(args, cfg, opts):
 
 def clear(args, cfg, opts):
 
-    root_dir = cfg.get("chroot", "root_dir")
+    if len(args) > 1:
+        print "Must provide only one chroot to clear"
+        return 14
+
+    if args:
+        root_dir = args[0]
+    else:
+        root_dir = cfg.get("chroot", "root_dir")
 
     failed_dismounts = []
 
